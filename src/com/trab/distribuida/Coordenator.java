@@ -63,23 +63,25 @@ public class Coordenator extends Thread {
 
     public void ack() {
         while(true) {
-            if (resourceStatus) {
+            if(!processRequestAddress.isEmpty()){
+                if (resourceStatus) {
 
-                resourceStatus = false;
+                    resourceStatus = false;
 
-                try {
-                    byte[] bytesPacote = ("ACK").getBytes();
+                    try {
+                        byte[] bytesPacote = ("ACK").getBytes();
 
-                    // get the first process request host and port
-                    String[] processAdress = processRequestAddress.get(0).split(":");
-                    String processHost = processAdress[0];
-                    String processPort = processAdress[1];
-                    DatagramPacket packet = new DatagramPacket(bytesPacote, bytesPacote.length, InetAddress.getByName(processHost), Integer.parseInt(processPort));
+                        // get the first process request host and port
+                        String[] processAdress = processRequestAddress.get(0).split(":");
+                        String processHost = processAdress[0];
+                        String processPort = processAdress[1];
+                        DatagramPacket packet = new DatagramPacket(bytesPacote, bytesPacote.length, InetAddress.getByName(processHost), Integer.parseInt(processPort));
 
-                    connectionSocket.send(packet);
+                        connectionSocket.send(packet);
 
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
         }
