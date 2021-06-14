@@ -9,26 +9,27 @@ import java.util.LinkedList;
 
 public class Coordenator extends Thread {
 
-    private DatagramSocket connectionSocket;
+    private static DatagramSocket connectionSocket;
 
     // store host and port from process
-    private LinkedList<String> processRequestAddress;
+    private static LinkedList<String> processRequestAddress;
 
     //true = free; false = locked;
-    private boolean resourceStatus;
+    private static boolean resourceStatus;
 
+    private CoordenatorAck coordenatorAckThread;
 
     public Coordenator(int port) throws SocketException {
 
         connectionSocket = new DatagramSocket(port);
-        processRequestAddress = new LinkedList<String>();
-
+        processRequestAddress = new LinkedList<>();
         resourceStatus = true;
+
+        new CoordenatorAck().start();
     }
 
     @Override
     public void start() {
-        ack();
         while(true) {
             try {
                 byte[] bytesPacote = new byte[1024];
@@ -61,29 +62,19 @@ public class Coordenator extends Thread {
         }
     }
 
-    public void ack() {
-        while(true) {
-            if(!processRequestAddress.isEmpty()){
-                if (resourceStatus) {
+    public static DatagramSocket getConnectionSocket() {
+        return connectionSocket;
+    }
 
-                    resourceStatus = false;
+    public static LinkedList<String> getProcessRequestAddress() {
+        return processRequestAddress;
+    }
 
-                    try {
-                        byte[] bytesPacote = ("ACK").getBytes();
+    public static boolean getResourceStatus() {
+        return resourceStatus;
+    }
 
-                        // get the first process request host and port
-                        String[] processAdress = processRequestAddress.get(0).split(":");
-                        String processHost = processAdress[0];
-                        String processPort = processAdress[1];
-                        DatagramPacket packet = new DatagramPacket(bytesPacote, bytesPacote.length, InetAddress.getByName(processHost), Integer.parseInt(processPort));
-
-                        connectionSocket.send(packet);
-
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        }
+    public static void setResourceStatus(boolean resourceStatus) {
+        Coordenator.resourceStatus = resourceStatus;
     }
 }
