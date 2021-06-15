@@ -17,24 +17,23 @@ public class Coordenator extends Thread {
     //true = free; false = locked;
     private static boolean resourceStatus;
 
-    private CoordenatorAck coordenatorAckThread;
-
     public Coordenator(int port) throws SocketException {
-
         connectionSocket = new DatagramSocket(port);
         processRequestAddress = new LinkedList<>();
         resourceStatus = true;
-
-        new CoordenatorAck().start();
     }
 
     @Override
-    public void start() {
+    public void run() {
+        System.out.println("No while true do coordenator");
+
+        new CoordenatorAck().start();
+
         while(true) {
             try {
                 byte[] bytesPacote = new byte[1024];
                 DatagramPacket packet = new DatagramPacket(bytesPacote, bytesPacote.length);
-                connectionSocket.setSoTimeout(10000);
+                connectionSocket.setSoTimeout(10000000);
                 connectionSocket.receive(packet);
 
                 String response = new String(packet.getData(), 0, packet.getLength());
@@ -52,10 +51,12 @@ public class Coordenator extends Thread {
                         // remove the first process request host and port
                         processRequestAddress.remove(0);
                         resourceStatus = true;
+                        break;
 
                     default:
                         throw new RuntimeException("Command not recognized");
                 }
+
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
